@@ -30,6 +30,31 @@ public:
         bmp = outputBmp;
     }
 
+     void applyInvertFilter(Bmp& bmp) {
+        for (int i = 0; i < bmp.getHeight(); i++) {
+            for (int j = 0; j < bmp.getWidth(); j++) {
+                Pixel p = bmp.getPixel(i, j);
+                p.red = 255 - p.red;
+                p.grn = 255 - p.grn;
+                p.blu = 255 - p.blu;
+                bmp.setPixel(i, j, p);
+            }
+        }
+    }
+
+    void applyGrayscaleFilter(Bmp& bmp) {
+        for (int i = 0; i < bmp.getHeight(); i++) {
+            for (int j = 0; j < bmp.getWidth(); j++) {
+                Pixel p = bmp.getPixel(i, j);
+                unsigned char gray = (p.red + p.grn + p.blu) / 3;
+                p.red = gray;
+                p.grn = gray;
+                p.blu = gray;
+                bmp.setPixel(i, j, p);
+            }
+        }
+    }
+
 private:
     std::vector<std::vector<float>> kernel;
 };
@@ -61,6 +86,14 @@ int main() {
     });
     embossProcessor.applyKernel(bmp);
     bmp.write("Cutecat_emboss.bmp");
+
+    BmpProcessor invertprocessor;
+    invertprocessor.applyInvertFilter(bmp);
+    bmp.write("Cutecat_invert.bmp");
+
+    BmpProcessor grayscaleprocessor;
+    grayscaleprocessor.applyGrayscaleFilter(bmp);
+    bmp.write("Cutecat_grayscale.bmp");
 
     return 0;
 }
