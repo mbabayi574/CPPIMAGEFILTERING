@@ -2,30 +2,58 @@
 
 #include "bmp.hpp"
 
-/*
-To work with BMP files, first include the header and create an instance of the Bmp struct.
-Now there are 3 functions we are interested in: create, read, write
-These functions take the Bmp struct instance as the first argument.
+std::vector<std::vector<float>> gaussianBlurKernel = {
+    {1/16, 2/16, 1/16},
+    {2/16, 4/16, 2/16},
+    {1/16, 2/16, 1/16}
+};
 
-To read a BMP file: read(bmp, "file.bmp");
-To write the modified in-memory BMP to a file: write(bmp, "out.bmp");
-To create a new BMP file: create(bmp, width, height);
+std::vector<std::vector<float>> sharpenKernel = {
+    {0, -1, 0},
+    {-1, 5,-1},
+    {0, -1, 0}
+};
 
-We can view images as 2D vectors of Pixel structs.
-The Pixel struct is just a red-green-blue tuple.
+std::vector<std::vector<float>> embossKernel = {
+    {-2,-1,0},
+    {-1, 1,1},
+    { 0, 1,2}
+};
 
-The structure we work with is the 'data' field of 'struct Bmp'
-bmp.data[0][0].red // returns a value between 0 and 255
-The (0, 0) pixel is the top-left corner of the image.
-So we have data[row][column]
-The bottom-right pixel is: bmp.data[bmp.infoHdr.height - 1][bmp.infoHdr.width - 1]
-*/
+void applyKernel(const Bmp& inputBmp, Bmp& outputBmp, const std::vector<std::vector<float>>& kernel) {
+    create(outputBmp, inputBmp.infoHdr.width, inputBmp.infoHdr.height);
+    for (int i = 0; i < inputBmp.infoHdr.height; i++) {
+        for (int j = 0; j < inputBmp.infoHdr.width; j++) {
+            float red = 0;
+            float grn = 0;
+            float blu = 0;
+            for (int k = 0; k < kernel.size(); k++) {
+                for (int l = 0; l < kernel[k].size(); l++) {
+                    int x = j + l - kernel.size() / 2;
+                    int y = i + k - kernel.size() / 2;
+                    if (x < 0 || x >= inputBmp.infoHdr.width || y < 0 || y >= inputBmp.infoHdr.height) continue;
+                    red += inputBmp.data[y][x].red * kernel[k][l];
+                    grn += inputBmp.data[y][x].grn * kernel[k][l];
+                    blu += inputBmp.data[y][x].blu * kernel[k][l];
+                }
+            }
+            outputBmp.data[i][j] = Pixel(red, grn, blu);
+        }
+    }
+}
 
 int main() {
-    Bmp bmp;
-    create(bmp, 100, 200);
-    bmp.data[0][0] = Pixel(255, 0, 0);
-    write(bmp, "test.bmp");
-    delete bmp.fileData;
+    Bmp inputBmp;
+    read(inputBmp, "Cutecat.bmp");
+    Bmp outputBmp;
+    create(outputBmp, inputBmp.infoHdr.width, inputBmp.infoHdr.height);
+    applyKernel(inputBmp, outputBmp, gaussianBlurKernel);
+    write(outputBmp, "Cutecat_gaussianBlur.bmp");
+    applyKernel(inputBmp, outputBmp, sharpenKernel);
+    write(outputBmp, "Cutecat_sharpen.bmp");
+    applyKernel(inputBmp, outputBmp, embossKernel);
+    write(outputBmp, "Cutecat_emboss.bmp");
+    delete inputBmp.fileData;
+    delete outputBmp.fileData;
     return 0;
 }
