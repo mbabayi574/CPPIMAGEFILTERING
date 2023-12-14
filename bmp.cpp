@@ -122,13 +122,88 @@ void vectorToFileData(Bmp &bmp)
 
 bool Bmp::create(int width, int height)
 {
-    // Implementation of the create method
-    // You can use the existing create function as a reference
+    // Initialize the file header
+    fileHdr.type = 0x4D42; // 'BM'
+    fileHdr.size = sizeof(BmpFileHeader) + sizeof(BmpInfoHeader) + width * height * sizeof(Pixel);
+    fileHdr.reserved1 = 0;
+    fileHdr.reserved2 = 0;
+    fileHdr.offBits = sizeof(BmpFileHeader) + sizeof(BmpInfoHeader);
+
+    // Initialize the info header
+    infoHdr.size = sizeof(BmpInfoHeader);
+    infoHdr.width = width;
+    infoHdr.height = height;
+    infoHdr.planes = 1;
+    infoHdr.bitCount = 24;   // 24-bit color
+    infoHdr.compression = 0; // No compression
+    infoHdr.sizeImage = width * height * sizeof(Pixel);
+
+    return true;
 }
+
+class InfoHeader : public BmpInfoHeader
+{
+public:
+    InfoHeader() = default;
+    InfoHeader(const BmpInfoHeader &infoHdr)
+        : BmpInfoHeader(infoHdr) {}
+    int getWidth() const;
+
+private:
+    int width;
+
+    friend class Bmp;
+
+    void setWidth(int width)
+    {
+        this->width = width;
+    }
+
+    void setHeight(int height)
+    {
+        this->height = height;
+    }
+
+    void setBitCount(int bitCount)
+    {
+        this->bitCount = bitCount;
+    }
+
+    void setCompression(int compression)
+    {
+        this->compression = compression;
+    }
+
+    void setImageSize(int imageSize)
+    {
+        this->imageSize = imageSize;
+    }
+
+    void setXPixelsPerMeter(int xPixelsPerMeter)
+    {
+        this->xPixelsPerMeter = xPixelsPerMeter;
+    }
+
+    void setYPixelsPerMeter(int yPixelsPerMeter)
+    {
+        this->yPixelsPerMeter = yPixelsPerMeter;
+    }
+
+    void setColorsUsed(int colorsUsed)
+    {
+        this->colorsUsed = colorsUsed;
+    }
+};
+
+class BmpInfoHeader : public InfoHeader
+{
+public:
+    BmpInfoHeader() = default;
+    BmpInfoHeader(const InfoHeader &infoHdr)
+        : InfoHeader(infoHdr) {}
+};
 
 int Bmp::getWidth() const
 {
-    // Implementation of the getWidth method
-    // You can simply return the width from the infoHdr
     return infoHdr.width;
 }
