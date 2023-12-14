@@ -30,7 +30,7 @@ public:
         bmp = outputBmp;
     }
 
-     void applyInvertFilter(Bmp& bmp) {
+    void applyInvertFilter(Bmp& bmp) {
         for (int i = 0; i < bmp.getHeight(); i++) {
             for (int j = 0; j < bmp.getWidth(); j++) {
                 Pixel p = bmp.getPixel(i, j);
